@@ -1,0 +1,52 @@
+-- =====================================================
+-- Script Generate Forecast untuk Semua Produk
+-- Jalankan setiap hari jam 1 pagi (via cron/event)
+-- =====================================================
+
+DELIMITER //
+
+CREATE PROCEDURE `sp_generate_all_forecasts`()
+BEGIN
+    DECLARE v_done INT DEFAULT FALSE;
+    DECLARE v_product_id INT;
+    DECLARE cur_products CURSOR FOR 
+        SELECT id FROM products WHERE is_active = 1;
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET v_done = TRUE;
+    
+    OPEN cur_products;
+    
+    read_loop: LOOP
+        FETCH cur_products INTO v_product_id;
+        IF v_done THEN
+            LEAVE read_loop;
+        END IF;
+        
+        CALL sp_generate_forecast(v_product_id, 30);
+    END LOOP;
+    
+    CLOSE cur_products;
+    
+    -- Log ke table
+    INSERT INTO import_logs (import_number, source_system, import_type, total_records, status, completed_at)
+    VALUES (
+        CONCAT('FRCST/', DATE_FORMAT(NOW(), '%Y%m%d'), '/', LPAD(FLOOR(RAND() * 10000), 4, '0')),
+        'AI_Forecast_System',
+        'Forecast',
+        (SELECT COUNT(*) FROM products WHERE is_active = 1),
+        'Completed',
+        NOW()
+    );
+END //
+
+DELIMITER ;
+
+-- Jadwalkan dengan Event
+CREATE EVENT IF NOT EXISTS `evt_generate_daily_forecast`
+ON SCHEDULE EVERY 1 DAY STARTS '2024-01-01 01:00:00'
+DO
+BEGIN
+    CALL sp_generate_all_forecasts();
+END //
+
+-- Manual run:
+-- CALL sp_generate_all_forecasts();

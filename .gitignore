@@ -1,0 +1,51 @@
+# MySQL
+*.sql
+!apotek_modern_final_complete.sql
+!sample_data.sql
+*.ibd
+*.frm
+*.myd
+*.myi
+*.log
+
+# Backup files
+*.backup
+*.bak
+backup_*.sql
+*.dump
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# Docker
+mysql_data/
+*.pid
+
+# Logs
+*.log
+error.log
+access.log
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Secrets
+*.pem
+*.key
+*.crt
